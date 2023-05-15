@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "budget-bot-2"
+version = "0.1.0"
+description = ""
+authors = ["Pavel Maksimov <maksimov.pavel.an@yandex.ru>"]
+readme = "README.md"
+packages = [{include = "budget_bot_2", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
