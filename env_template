@@ -1,0 +1,6 @@
+DATABASE=DBMS
+DB_USER=db_user
+PASSWORD=your_password
+HOST=db_host
+PORT=port
+DB_NAME=db_name
