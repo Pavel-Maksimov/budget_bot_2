@@ -50,10 +50,6 @@ class Income(Base):
     created_on = Column(TIMESTAMP(timezone=True))
 
     user = relationship("User", back_populates="incomes")
-    # category = relationship(
-    #     "IncomeCategory",
-    #     back_populates="records"
-    # )
 
 
 class OutcomeCategory(Base):
