@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     HOST: str
     PORT: int
     DB_NAME: str
+    BOT_TOKEN: str
 
     class Config:
         env_file = ".env", "../.env"

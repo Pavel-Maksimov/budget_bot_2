@@ -1,9 +1,16 @@
 from datetime import datetime
 
-from sqlalchemy.orm import declarative_base, relationship, backref
-from sqlalchemy import (Column, BigInteger, Integer, ForeignKey, Numeric,
-                        String, TIMESTAMP, CheckConstraint)
-
+from sqlalchemy import (
+    TIMESTAMP,
+    BigInteger,
+    CheckConstraint,
+    Column,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+)
+from sqlalchemy.orm import backref, declarative_base, relationship
 
 Base = declarative_base()
 
@@ -16,10 +23,6 @@ class Outcome(Base):
     __tablename__ = "outcome"
     __table_args__ = (
         CheckConstraint("amount >= 0.00", name="outcome_amount_positive"),
-        CheckConstraint(
-            "created_on >= CURRENT_TIMESTAMP",
-            name="outcome_created_on_positive"
-        )
     )
 
     id = Column(BigInteger, primary_key=True)
@@ -29,10 +32,7 @@ class Outcome(Base):
     created_on = Column(TIMESTAMP(timezone=True), default=datetime.now())
 
     user = relationship("User", back_populates="outcomes")
-    category = relationship(
-        "OutcomeCategory",
-        back_populates="outcomes"
-    )
+    category = relationship("OutcomeCategory", back_populates="records")
 
 
 class Income(Base):
@@ -41,13 +41,7 @@ class Income(Base):
     """
 
     __tablename__ = "income"
-    __table_args__ = (
-        CheckConstraint("amount >= 0.00", name="income_amount_positive"),
-        CheckConstraint(
-            "created_on >= CURRENT_TIMESTAMP",
-            name="income_created_on_positive"
-        )
-    )
+    __table_args__ = (CheckConstraint("amount >= 0.00", name="income_amount_positive"),)
 
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("user.id"))
@@ -56,10 +50,10 @@ class Income(Base):
     created_on = Column(TIMESTAMP(timezone=True))
 
     user = relationship("User", back_populates="incomes")
-    category = relationship(
-        "IncomeCategory",
-        back_populates="incomes"
-    )
+    # category = relationship(
+    #     "IncomeCategory",
+    #     back_populates="records"
+    # )
 
 
 class OutcomeCategory(Base):
@@ -70,10 +64,7 @@ class OutcomeCategory(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True)
 
-    records = relationship(
-        "Outcome",
-        backref=backref("category")
-    )
+    records = relationship("Outcome")
 
 
 class IncomeCategory(Base):
@@ -83,10 +74,7 @@ class IncomeCategory(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True)
 
-    records = relationship(
-        "Income",
-        backref=backref("category")
-    )
+    records = relationship("Income", backref=backref("category"))
 
 
 class User(Base):
@@ -99,8 +87,5 @@ class User(Base):
     last_name = Column(String(64))
     tg_username = Column(String(32))
 
-    incomes = relationship("Income", backref=backref("user"))
-    outcomes = relationship(
-        "Outcome",
-        backref=backref("user")
-    )
+    incomes = relationship("Income")
+    outcomes = relationship("Outcome")
