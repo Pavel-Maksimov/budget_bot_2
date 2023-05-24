@@ -133,5 +133,7 @@ dmypy.json
 .idea
 
 media/
+*.jpeg
+*.pdf
 
 .vscode/

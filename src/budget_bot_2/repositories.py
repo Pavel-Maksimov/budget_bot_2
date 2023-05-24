@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import Date, cast, desc, func, select
 from sqlalchemy.orm import Session
 
-from .models import Income, IncomeCategory, Outcome, OutcomeCategory, User
+from budget_bot_2.models import Income, IncomeCategory, Outcome, OutcomeCategory, User
 
 
 class BaseRepository:
@@ -19,8 +19,8 @@ class BaseRepository:
 
 
 class RecordRepository(BaseRepository):
-    record = None
-    category = None
+    record: Income = None
+    category: IncomeCategory = None
 
     async def save_record(self, user, amount, category_name):
         category_id = await self.session.scalar(
@@ -43,8 +43,36 @@ class RecordRepository(BaseRepository):
         result = await self.session.scalars(select(self.category.name))
         return result.all()
 
-    async def get_grouped_by_day(self, period):
-        self.session.execute(select(self.record))
+    async def get_grouped_by_day(self, user_id, period):
+        result = await self.session.execute(
+            select(cast(self.record.created_on, Date), func.sum(self.record.amount))
+            .join(User, User.tg_id == user_id)
+            .where(self.record.created_on > (func.now() - timedelta(days=period)))
+            .group_by(cast(self.record.created_on, Date))
+            .order_by(cast(self.record.created_on, Date))
+        )
+        return result.all()
+
+    async def get_ungrouped(self, user_id, period):
+        result = await self.session.execute(
+            select(self.record.created_on, self.category.name, self.record.amount)
+            .join(self.category)
+            .join(User, User.tg_id == user_id)
+            .where(self.record.created_on > (func.now() - timedelta(days=period)))
+            .order_by("created_on")
+        )
+        return result.all()
+
+    async def get_grouped_by_categories(self, user_id, period):
+        result = await self.session.execute(
+            select(self.category.name, func.sum(self.record.amount).label("amount"))
+            .join(self.category)
+            .join(User, User.tg_id == user_id)
+            .where(self.record.created_on > (func.now() - timedelta(days=period)))
+            .group_by(self.category.name)
+            .order_by(desc("amount"))
+        )
+        return result.all()
 
     async def save_category(self, name):
         pass

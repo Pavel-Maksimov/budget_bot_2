@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import BaseSettings
 
 
@@ -9,6 +11,8 @@ class Settings(BaseSettings):
     PORT: int
     DB_NAME: str
     BOT_TOKEN: str
+    BASE_DIR = Path.cwd()
+    REPORT_PATH = BASE_DIR.joinpath("reports", "report.pdf")
 
     class Config:
         env_file = ".env", "../.env"

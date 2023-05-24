@@ -1,0 +1,45 @@
+{% block categories_report %}
+    <h2 class="headers">Распределение по категориям</h2>
+    <section>
+        <nav>
+          <img src="{{ charts_dir }}/fig.jpeg">
+        </nav>
+        <article>
+          <table class="right-tended">
+            <tr class="t-head">
+              <th>
+              </th>
+              <th>
+                Категория
+              </th>
+              <th>
+                Сумма
+              </th>
+              <th>
+                Проценты
+              </th>
+            </tr>
+            {% for row in data_by_categories %}
+              <tr class="{{ loop.cycle('odd', 'even') }}">
+                <td style="background: {{colors[loop.index-1]}};color: {{colors[loop.index-1]}};">
+                {% if loop.last %}
+                  <tr class="bottom-line">
+                    <td style="color: white;">
+                      _
+                    </td>
+                {% endif %}
+                <td>
+                  {{ row[0] }}
+                </td>
+                <td>
+                  {{ row[1] }}
+                </td>
+                <td>
+                  {{ (row[1]/data_by_categories[-1][1]*100)|round(2) }}%
+                </td>
+              </tr>
+            {% endfor %}
+          </table>
+        </article>
+    </section>
+{% endblock categories_report %}

@@ -1,0 +1,44 @@
+{% block ungrouped_report %}
+    <h2 class="headers">Подробный отчет</h2>
+    <div>
+    <table>
+            <tr class="t-head">
+              <th>
+                Дата
+              </th>
+              <th>
+                Категория
+              </th>
+              <th>
+                Сумма
+              </th>
+              <th>
+                Проценты
+              </th>
+            </tr>
+            {% for row in data_ungrouped %}
+                {% if loop.last %}
+                  <tr class="bottom-line">
+                    <td>
+                      {{ row[0] }}
+                    </td>
+                {% else %}
+                  <tr class="{{ loop.cycle('odd', 'even') }}">
+                    <td>
+                      {{ row[0].strftime("%d.%m.%Y") }}
+                    </td>
+                {% endif %}
+                <td>
+                  {{ row[1] }}
+                </td>
+                <td>
+                  {{ row[2] }}
+                </td>
+                <td>
+                  {{ (row[2]/data_ungrouped[-1][2]*100)|round(2) }}%
+                </td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+{% endblock ungrouped_report %}

@@ -1,0 +1,43 @@
+{% block days_report %}
+    <h2 class="headers">Распределение по дням</h2>
+    <section>
+        <nav>
+          <img src="{{ charts_dir }}/bar_fig.jpeg">
+        </nav>
+        <article>
+        <table class="right-tended">
+            <tr class="t-head">
+              <th>
+                Дата
+              </th>
+              <th>
+                Сумма
+              </th>
+              <th>
+                Проценты
+              </th>
+            </tr>
+            {% for row in data_by_days %}
+                {% if loop.last %}
+                  <tr class="bottom-line">
+                    <td>
+                      {{ row[0] }}
+                    </td>
+                {% else %}
+                  <tr class="{{ loop.cycle('odd', 'even') }}">
+                    <td>
+                      {{ row[0].strftime("%d.%m.%Y") }}
+                    </td>
+                {% endif %}
+                <td>
+                  {{ row[1] }}
+                </td>
+                <td>
+                  {{ (row[1]/data_by_days[-1][1]*100)|round(2) }}%
+                </td>
+              </tr>
+            {% endfor %}
+          </table>
+        </article>
+    </section>
+{% endblock days_report %}

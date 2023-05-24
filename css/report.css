@@ -1,0 +1,54 @@
+   nav {
+    float: left;
+    width: 35%;
+    margin: 10px;
+    padding: 0%;
+    outline-width: 0px;
+  }
+  article {
+    float: right;
+    margin-left: 20px;
+    padding: 0%;
+    width: 60%;
+    outline-width: 0px;
+  }
+  section::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  .report-block {
+    padding-bottom: 50px;
+  }
+  .headers {
+    color: #00BFFF;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 100%
+  }
+  .right-tended {
+    float: right;
+    margin-right: 20px;
+  }
+  .t-head {
+    background-color: #00BFFF;
+  }
+  .odd {
+    background-color: #e2ffe2;
+  }
+  .even {
+    background-color: white;
+  }
+  .bottom-line {
+    font-weight: bold;
+    background-color: #FFEFD5;
+  }
+  th, td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .bottom-line > td {
+    border: 1px inset;
+    border-style: solid hidden hidden hidden;
+    border-color: black;
+  }
