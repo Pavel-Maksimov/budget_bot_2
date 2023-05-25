@@ -1,7 +1,9 @@
 from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
+from budget_bot_2.custom_exeptions import RequestNotSuccessError
 from budget_bot_2.db_connection import Session
+from budget_bot_2.report import create_report
 from budget_bot_2.repositories import IncomeRepository, OutcomeRepository
 from budget_bot_2.utilities import create_keyboard
 
@@ -11,40 +13,59 @@ WRITING_RECORD = "record"
 SELECTING_TYPE = "type"
 SELECTING_CATEGORY = "category"
 WRITING_AMOUNT = "amount"
+WRITING_PEROID = "period"
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = "Выберите действие"
     keyboard = [["Запись", "Отчет"]]
     await update.message.reply_text(
-        text=text, reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        text=text,
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
     )
     return SELECTING_ACTION
 
 
 async def give_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = "Недоступно)"
+    text = "Введите период в днях"
     await update.message.reply_text(text=text)
-    return SELECTING_ACTION
+    return WRITING_PEROID
+
+
+async def send_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        report_path = await create_report(
+            user_id=update.effective_user.id, period=int(update.message.text)
+        )
+        await update.message.reply_document(document=report_path)
+    except RequestNotSuccessError as err:
+        await update.message.reply_text(text=err.message)
+    return -1
 
 
 async def choose_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = "Выберите тип записи"
     keyboard = [["Доход", "Расход"]]
     await update.message.reply_text(
-        text=text, reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        text=text,
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
     )
     return SELECTING_TYPE
 
 
-async def write_income(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def send_categories(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["record"] = update.message.text
-    text = "Выберите категорию"
     async with Session() as session:
-        categories = await IncomeRepository(session).get_all_categories()
-    keyboard = await create_keyboard(3, categories)
+        if update.message.text == "Доход":
+            repo = IncomeRepository(session)
+        else:
+            repo = OutcomeRepository(session)
+        categories = await repo.get_all_categories()
+    text = "Выберите категорию"
+    keyboard = create_keyboard(3, categories)
     await update.message.reply_text(
-        text=text, reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        text=text,
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
     )
     return SELECTING_CATEGORY
 
@@ -54,9 +75,10 @@ async def write_outcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = "Выберите категорию"
     async with Session() as session:
         categories = await OutcomeRepository(session).get_all_categories()
-    keyboard = await create_keyboard(3, categories)
+    keyboard = create_keyboard(3, categories)
     await update.message.reply_text(
-        text=text, reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        text=text,
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
     )
     return SELECTING_CATEGORY
 
@@ -64,9 +86,10 @@ async def write_outcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def write_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["category"] = update.message.text
     text = "Введите сумму"
-    keyboard = await create_keyboard(1, [])
+    keyboard = create_keyboard(1, [])
     await update.message.reply_text(
-        text=text, reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        text=text,
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
     )
     return WRITING_AMOUNT
 
@@ -77,12 +100,15 @@ async def write_amount(update: Update, context: ContextTypes.DEFAULT_TYPE):
             repo = IncomeRepository(session)
         else:
             repo = OutcomeRepository(session)
-        await repo.save_record(
-            user=update.effective_user,
-            amount=update.message.text,
-            category_name=context.user_data["category"],
-        )
-    await update.message.reply_text(text="Записано!")
+        try:
+            await repo.save_record(
+                user=update.effective_user,
+                amount=update.message.text,
+                category_name=context.user_data["category"],
+            )
+            await update.message.reply_text(text="Записано!")
+        except RequestNotSuccessError as err:
+            await update.message.reply_text(text=err.message)
     return -1
 
 

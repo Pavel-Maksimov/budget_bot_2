@@ -1,10 +1,13 @@
-async def create_keyboard(columns, buttons):
+BACK_BUTTON = "⇦"
+
+
+def create_keyboard(columns, buttons):
     """
     Create a custom keybord with specified buttons.
     Return it as list of list of strings.
     """
     keyboard = []
-    keyboard.append(["⇦"])
+    keyboard.append([BACK_BUTTON])
     keyboard[0].extend([buttons[i] for i in range(min(columns - 1, len(buttons)))])
     idx = columns - 1
     while idx < len(buttons):

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import Date, cast, desc, func, select
 from sqlalchemy.orm import Session
 
+from budget_bot_2.custom_exeptions import RequestNotSuccessError
 from budget_bot_2.models import Income, IncomeCategory, Outcome, OutcomeCategory, User
 
 
@@ -26,8 +27,10 @@ class RecordRepository(BaseRepository):
         category_id = await self.session.scalar(
             select(self.category.id).where(self.category.name == category_name)
         )
+        if category_id is None:
+            raise RequestNotSuccessError("Нет такой категории")
         user_repo = UserRepository(self.session)
-        current_user = await user_repo.get_by_id(user.id)
+        current_user = await user_repo.get_by_tg_id(user.id)
         if not current_user:
             current_user = await user_repo.save_user(user)
         new_record = self.record(
@@ -45,7 +48,10 @@ class RecordRepository(BaseRepository):
 
     async def get_grouped_by_day(self, user_id, period):
         result = await self.session.execute(
-            select(cast(self.record.created_on, Date), func.sum(self.record.amount))
+            select(
+                cast(self.record.created_on, Date),
+                func.sum(self.record.amount),
+            )
             .join(User, User.tg_id == user_id)
             .where(self.record.created_on > (func.now() - timedelta(days=period)))
             .group_by(cast(self.record.created_on, Date))
@@ -65,7 +71,10 @@ class RecordRepository(BaseRepository):
 
     async def get_grouped_by_categories(self, user_id, period):
         result = await self.session.execute(
-            select(self.category.name, func.sum(self.record.amount).label("amount"))
+            select(
+                self.category.name,
+                func.sum(self.record.amount).label("amount"),
+            )
             .join(self.category)
             .join(User, User.tg_id == user_id)
             .where(self.record.created_on > (func.now() - timedelta(days=period)))
@@ -100,6 +109,6 @@ class UserRepository(BaseRepository):
         await self.session.commit()
         return new_user
 
-    async def get_by_id(self, user_id):
+    async def get_by_tg_id(self, user_id):
         user = await self.session.execute(select(User).where(User.tg_id == user_id))
         return user.one()[0]

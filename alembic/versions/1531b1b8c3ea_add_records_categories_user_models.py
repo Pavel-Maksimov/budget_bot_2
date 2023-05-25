@@ -51,7 +51,8 @@ def upgrade() -> None:
         sa.Column("created_on", sa.TIMESTAMP(timezone=True), nullable=True),
         sa.CheckConstraint("amount >= 0.00", name="income_amount_positive"),
         sa.CheckConstraint(
-            "created_on >= CURRENT_TIMESTAMP", name="income_created_on_positive"
+            "created_on >= CURRENT_TIMESTAMP",
+            name="income_created_on_positive",
         ),
         sa.ForeignKeyConstraint(
             ["category_id"],
@@ -72,7 +73,8 @@ def upgrade() -> None:
         sa.Column("created_on", sa.TIMESTAMP(timezone=True), nullable=True),
         sa.CheckConstraint("amount >= 0.00", name="outcome_amount_positive"),
         sa.CheckConstraint(
-            "created_on >= CURRENT_TIMESTAMP", name="outcome_created_on_positive"
+            "created_on >= CURRENT_TIMESTAMP",
+            name="outcome_created_on_positive",
         ),
         sa.ForeignKeyConstraint(
             ["category_id"],

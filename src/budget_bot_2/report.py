@@ -3,6 +3,7 @@ import pdfkit
 from matplotlib import pyplot as plt
 from PIL import Image
 
+from budget_bot_2.custom_exeptions import RequestNotSuccessError
 from budget_bot_2.db_connection import Session
 from budget_bot_2.repositories import OutcomeRepository
 from settings import settings
@@ -10,7 +11,7 @@ from settings import settings
 TEMPLATE_DIR = settings.BASE_DIR.joinpath("jinja_templates")
 CSS_PATH = settings.BASE_DIR.joinpath("css", "report.css")
 CHARTS_DIR = settings.BASE_DIR.joinpath("charts")
-REPORT_PATH = settings.REPORT_PATH
+REPORT_PATH = settings.BASE_DIR.joinpath("reports", "report.pdf")
 
 COLORS = [
     "#FFA500",
@@ -32,12 +33,14 @@ COLORS = [
 ]
 
 
-async def get_report(user_id, period):
+async def create_report(user_id, period):
     async with Session() as session:
         repo = OutcomeRepository(session)
         data_by_categories = await repo.get_grouped_by_categories(
             user_id=user_id, period=period
         )
+        if len(data_by_categories) == 0:
+            raise RequestNotSuccessError("Нет записей для создания отчета.")
         data_by_days = await repo.get_grouped_by_day(user_id=user_id, period=period)
         ungrouped_data = await repo.get_ungrouped(user_id=user_id, period=period)
     await create_plot(data=[row[1] for row in data_by_categories])
@@ -51,12 +54,14 @@ async def get_report(user_id, period):
             "margin-right": "5",
             "margin-bottom": "30",
             "enable-local-file-access": "",
+            "quiet": "",
             "encoding": "UTF-8",
             "user-style-sheet": CSS_PATH,
         },
         css=CSS_PATH,
         verbose=True,
     )
+    return REPORT_PATH
 
 
 async def create_plot(data):

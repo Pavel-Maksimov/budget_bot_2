@@ -6,7 +6,8 @@ import settings
 from budget_bot_2.handlers import conv_handler
 
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.DEBUG
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.DEBUG,
 )
 logger = logging.getLogger(__name__)
 
