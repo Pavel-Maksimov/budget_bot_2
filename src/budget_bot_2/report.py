@@ -1,3 +1,6 @@
+"""
+Module for report creation for saved records of user.
+"""
 import jinja2
 import pdfkit
 from matplotlib import pyplot as plt
@@ -33,7 +36,17 @@ COLORS = [
 ]
 
 
-async def create_report(user_id, period):
+async def create_report(user_id: int, period: int) -> str:
+    """
+    Create a report of saved records for user.
+
+    Save report on disk as pdf file
+    and return an absotule path of created file.
+    Args:
+     - user_id - telegram id of user;
+     - period - time interval in days for report apart
+        form current date.
+    """
     async with Session() as session:
         repo = OutcomeRepository(session)
         data_by_categories = await repo.get_grouped_by_categories(
@@ -64,7 +77,11 @@ async def create_report(user_id, period):
     return REPORT_PATH
 
 
-async def create_plot(data):
+async def create_plot(data: list[float]) -> None:
+    """
+    Create a pie plot for a report
+     and save it on disk.
+    """
     fig, axes = plt.subplots()
     axes.pie(data, colors=COLORS)
     path = CHARTS_DIR.joinpath("fig.jpeg")
@@ -74,7 +91,11 @@ async def create_plot(data):
         image.save(path, "jpeg", quality=100)
 
 
-async def create_bar_plot(data):
+async def create_bar_plot(data: list[float]) -> None:
+    """
+    Create a bar plot for a report
+     and save it on disk.
+    """
     fig, axes = plt.subplots()
     dates = [row[0].strftime("%d.%m.%y") for row in data]
     amounts = [row[1] for row in data]
@@ -88,7 +109,14 @@ async def create_bar_plot(data):
         image.save(path, "jpeg", quality=100)
 
 
-async def render_template(data_by_categories, data_by_days, data_ungrouped):
+async def render_template(
+    data_by_categories: list, data_by_days: list, data_ungrouped: list
+) -> str:
+    """
+    Create a html from templates and passed
+     sets of data using jinja engine.
+     Return it as a string.
+    """
     template_loader = jinja2.FileSystemLoader(TEMPLATE_DIR)
     template_env = jinja2.Environment(loader=template_loader)
     template = template_env.get_template("basic_template.html")

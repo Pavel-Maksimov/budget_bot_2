@@ -1,3 +1,11 @@
+"""
+Repositories represent classes for connection
+ and working with database.
+Each of the class apply to specified table
+ of the database and encapsulate methods to
+ make a queries.
+"""
+
 from datetime import datetime, timedelta
 
 from sqlalchemy import Date, cast, desc, func, select
@@ -20,8 +28,15 @@ class BaseRepository:
 
 
 class RecordRepository(BaseRepository):
-    record: Income = None
-    category: IncomeCategory = None
+    """
+    Parent class for income and outcome records.
+
+    Define common methods for Income and Outcome
+     repositories.
+    """
+
+    record = None
+    category = None
 
     async def save_record(self, user, amount, category_name):
         category_id = await self.session.scalar(

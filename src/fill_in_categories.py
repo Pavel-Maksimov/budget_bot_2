@@ -1,3 +1,7 @@
+"""
+Initial insert queries for income and outcome categories.
+"""
+
 import asyncio
 
 from budget_bot_2.db_connection import Session
@@ -16,7 +20,6 @@ OUTCOME_CATEGORIES = [
     "мобильная связь",
     "интернет",
     "животные",
-    "дать в долг",
     "коммунальные",
     "книги",
     "налоги",

@@ -1,3 +1,8 @@
+"""
+Handlers that dispatch messages of specified view.
+
+Call corresponding callback functions.
+"""
 from telegram.ext import ConversationHandler, MessageHandler, filters
 
 from budget_bot_2.callbacks import MAIN_MENU  # write_income,; write_outcome,
@@ -29,7 +34,6 @@ conv_handler = ConversationHandler(
         WRITING_PEROID: [MessageHandler(filters.Regex(r"\d+"), send_report)],
         SELECTING_TYPE: [
             MessageHandler(filters.Regex(r"(Доход)|(Расход)"), send_categories)
-            # MessageHandler(filters.Regex("Расход"), write_outcome),
         ],
         SELECTING_CATEGORY: [MessageHandler(filters.TEXT, write_category)],
         WRITING_AMOUNT: [MessageHandler(filters.Regex(r"\d.?\d*"), write_amount)],

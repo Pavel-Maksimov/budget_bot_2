@@ -1,3 +1,8 @@
+"""
+Models represent tables on the database.
+
+Fields of models define their columns.
+"""
 from datetime import datetime
 
 from sqlalchemy import (

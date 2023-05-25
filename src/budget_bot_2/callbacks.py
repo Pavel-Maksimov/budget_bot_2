@@ -1,3 +1,6 @@
+"""
+Callback functions used for bot conversation with user.
+"""
 from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
@@ -17,6 +20,9 @@ WRITING_PEROID = "period"
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Start dialog with user.
+    """
     text = "Выберите действие"
     keyboard = [["Запись", "Отчет"]]
     await update.message.reply_text(
@@ -27,12 +33,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def give_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Suggest the user to enter period in days
+     to create a report for.
+    """
     text = "Введите период в днях"
     await update.message.reply_text(text=text)
     return WRITING_PEROID
 
 
 async def send_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Create report as pdf file and send it to user.
+    """
     try:
         report_path = await create_report(
             user_id=update.effective_user.id, period=int(update.message.text)
@@ -44,6 +57,10 @@ async def send_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def choose_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Send custom keyboard to user with suggestion to
+     choose a type of record - income or outcome.
+    """
     text = "Выберите тип записи"
     keyboard = [["Доход", "Расход"]]
     await update.message.reply_text(
@@ -54,6 +71,11 @@ async def choose_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def send_categories(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Send category for chosen record.
+    Categoris is taken from corresponding
+     database table.
+    """
     context.user_data["record"] = update.message.text
     async with Session() as session:
         if update.message.text == "Доход":
@@ -70,31 +92,22 @@ async def send_categories(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return SELECTING_CATEGORY
 
 
-async def write_outcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data["record"] = update.message.text
-    text = "Выберите категорию"
-    async with Session() as session:
-        categories = await OutcomeRepository(session).get_all_categories()
-    keyboard = create_keyboard(3, categories)
-    await update.message.reply_text(
-        text=text,
-        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
-    )
-    return SELECTING_CATEGORY
-
-
 async def write_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Save chosen category and suggest user to
+     enter the sum of record.
+    """
     context.user_data["category"] = update.message.text
     text = "Введите сумму"
-    keyboard = create_keyboard(1, [])
-    await update.message.reply_text(
-        text=text,
-        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
-    )
+    await update.message.reply_text(text=text)
     return WRITING_AMOUNT
 
 
 async def write_amount(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Accept sum of record from user and
+     save a record into database.
+    """
     async with Session() as session:
         if context.user_data["record"] == "Доход":
             repo = IncomeRepository(session)
@@ -109,13 +122,4 @@ async def write_amount(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(text="Записано!")
         except RequestNotSuccessError as err:
             await update.message.reply_text(text=err.message)
-    return -1
-
-
-async def save_record(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    pass
-
-
-async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(text="Записано!")
     return -1
