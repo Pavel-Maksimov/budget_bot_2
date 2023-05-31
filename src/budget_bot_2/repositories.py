@@ -126,4 +126,4 @@ class UserRepository(BaseRepository):
 
     async def get_by_tg_id(self, user_id):
         user = await self.session.execute(select(User).where(User.tg_id == user_id))
-        return user.one()[0]
+        return user.one_or_none()

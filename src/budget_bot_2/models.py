@@ -39,6 +39,9 @@ class Outcome(Base):
     user = relationship("User", back_populates="outcomes")
     category = relationship("OutcomeCategory", back_populates="records")
 
+    def __repr__(self) -> str:
+        return f"Outcome {self.category.name}"
+
 
 class Income(Base):
     """
@@ -56,6 +59,9 @@ class Income(Base):
 
     user = relationship("User", back_populates="incomes")
 
+    def __repr__(self) -> str:
+        return f"Income {self.id}"
+
 
 class OutcomeCategory(Base):
 
@@ -67,6 +73,9 @@ class OutcomeCategory(Base):
 
     records = relationship("Outcome")
 
+    def __repr__(self) -> str:
+        return f"Outcome category {self.name}"
+
 
 class IncomeCategory(Base):
 
@@ -76,6 +85,9 @@ class IncomeCategory(Base):
     name = Column(String(100), unique=True)
 
     records = relationship("Income", backref=backref("category"))
+
+    def __repr__(self) -> str:
+        return f"Income category {self.name}"
 
 
 class User(Base):
@@ -90,3 +102,6 @@ class User(Base):
 
     incomes = relationship("Income")
     outcomes = relationship("Outcome")
+
+    def __repr__(self) -> str:
+        return f"User {self.first_name}, {self.tg_id}"
